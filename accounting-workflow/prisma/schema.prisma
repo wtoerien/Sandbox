@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Practice {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  taxNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  password     String
+  firstName    String
+  lastName     String
+  role         String    @default("STAFF")
+  isActive     Boolean   @default(true)
+  practiceId   String
+  practice     Practice  @relation(fields: [practiceId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  assignedJobs Job[]     @relation("AssignedTo")
+  createdJobs  Job[]     @relation("CreatedBy")
+}
+
+model Client {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  taxFileNumber String?
+  abn           String?
+  clientType    String   @default("INDIVIDUAL")
+  isActive      Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  jobs          Job[]
+}
+
+model JobTemplate {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  category    String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  steps       TemplateStep[]
+  jobs        Job[]
+}
+
+model TemplateStep {
+  id          String      @id @default(cuid())
+  templateId  String
+  template    JobTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  order       Int
+  name        String
+  description String?
+  isRequired  Boolean     @default(true)
+  jobSteps    JobStep[]
+}
+
+model Job {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  status        String       @default("NOT_STARTED")
+  priority      String       @default("MEDIUM")
+  dueDate       DateTime?
+  completedAt   DateTime?
+  clientId      String
+  client        Client       @relation(fields: [clientId], references: [id])
+  templateId    String?
+  template      JobTemplate? @relation(fields: [templateId], references: [id])
+  assignedToId  String?
+  assignedTo    User?        @relation("AssignedTo", fields: [assignedToId], references: [id])
+  createdById   String?
+  createdBy     User?        @relation("CreatedBy", fields: [createdById], references: [id])
+  financialYear String?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  steps         JobStep[]
+}
+
+model JobStep {
+  id             String        @id @default(cuid())
+  jobId          String
+  job            Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  templateStepId String?
+  templateStep   TemplateStep? @relation(fields: [templateStepId], references: [id])
+  order          Int
+  name           String
+  description    String?
+  status         String        @default("PENDING")
+  completedAt    DateTime?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
