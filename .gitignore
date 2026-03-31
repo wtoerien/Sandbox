@@ -1,0 +1,4 @@
+accounting-workflow/node_modules
+accounting-workflow/.next
+accounting-workflow/prisma/dev.db
+accounting-workflow/dev.db
